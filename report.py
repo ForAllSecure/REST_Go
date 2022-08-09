@@ -117,6 +117,12 @@ for f in files:
 curdir = os.getcwd()
 res = ""
 
+subprocess.run("mkdir -p " + "data/" + services[k], shell=True)
+subprocess.call('mv *.csv ' + "data/" + services[k], shell=True)
+subprocess.call('mv error.json ' + "data/" + services[k], shell=True)
+subprocess.call('mv time.json ' + "data/" + services[k], shell=True)
+subprocess.call('mv jacoco*.exec ' + "data/" + services[k], shell=True)
+
 t_line = [0, 0, 0, 0, 0, 0]
 c_line = [0, 0, 0, 0, 0, 0]
 t_branch = [0, 0, 0, 0, 0, 0]
@@ -253,17 +259,17 @@ if os.path.isdir(mypath):
                     crucial = crucial + 1
 res = ""
 
-for k in range(6):
-    if t_line[k] != 0:
-        line = c_line[k]/t_line[k]
+for kk in range(6):
+    if t_line[kk] != 0:
+        line = c_line[kk]/t_line[kk]
     else:
         line = 0
-    if t_branch[k] != 0:
-        branch = c_branch[k]/t_branch[k]
+    if t_branch[kk] != 0:
+        branch = c_branch[kk]/t_branch[kk]
     else:
         branch = 0
-    if t_method[k] != 0:
-        method = c_method[k]/t_method[k]
+    if t_method[kk] != 0:
+        method = c_method[kk]/t_method[kk]
     else:
         method = 0
     res = res + str(line*100) + '%,' + str(branch*100) + '%,' + str(method*100) + '%\n'
@@ -273,10 +279,5 @@ with open('res.csv', 'w') as f:
     f.write(res)
 
 
-subprocess.run("mkdir -p " + "data/" + services[k], shell=True)
 subprocess.call('mv res.csv ' + "data/" + services[k], shell=True)
-subprocess.call('mv *.csv ' + "data/" + services[k], shell=True)
-subprocess.call('mv error.json ' + "data/" + services[k], shell=True)
-subprocess.call('mv time.json ' + "data/" + services[k], shell=True)
-subprocess.call('mv jacoco*.exec ' + "data/" + services[k], shell=True)
 subprocess.call('mv log* ' + "data/" + services[k], shell=True)

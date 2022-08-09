@@ -25,7 +25,16 @@ wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.
 && sudo apt-get install -y dotnet-sdk-5.0
 
 ######project-tracking-system#####
-cd services/jdk11/project-tracking-system && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+# export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+# export PATH=$JAVA_HOME/bin:$PATH
+# cd ./services/evo_jdk8 && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+# cd ../rest-study && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+# cd ../spring-batch-rest && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+# cd ../spring-boot-sample-app && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+export JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+cd ./services/jdk11/cwa-verification && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+cd ../project-tracking-system && mvn clean install -DskipTests && mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 cd ../../..
 
 ######Testing Tools#####
@@ -41,8 +50,8 @@ rm evomaster.jar.zip
 . ./venv/bin/activate && pip install schemathesis
 
 # Install APIFuzzer 0.9.11
-. ./venv/bin/activate && cd APIFuzzer && pip install .
-cd ..
+# . ./venv/bin/activate && cd APIFuzzer && pip install .
+# cd ..
 
 # Install RESTler 8.3.0
 . ./venv/bin/activate \

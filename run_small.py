@@ -5,14 +5,14 @@ import subprocess
 
 
 def whitebox(port):
-    timeout = time.time() + 60 * 60 * float(time_limit)
+    timeout = time.time() + float(time_limit)
     while time.time() < timeout:
         subprocess.run("rm -rf " + service, shell=True)
         subprocess.run("java -jar evomaster.jar --sutControllerPort " + str(port) + " --maxTime 10m --outputFolder " + service, shell=True)
 
 
 def blackbox(swagger, port):
-    timeout = time.time() + 60 * 60 * float(time_limit)
+    timeout = time.time() + float(time_limit)
     while time.time() < timeout:
         if tool == "dredd":
             subprocess.run("dredd " + swagger + ' http://localhost:' + str(port), shell=True)
@@ -23,7 +23,7 @@ def blackbox(swagger, port):
             basedir = os.path.join(curdir, "restler_" + service)
             restler_home = os.path.join(curdir, "restler/restler_bin/restler/Restler.dll")
             com1 = " && dotnet " + restler_home + " compile --api_spec " + swagger
-            com2 = " && dotnet " + restler_home + " fuzz --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl --time_budget " + time_limit
+            com2 = " && dotnet " + restler_home + " fuzz --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl --time_budget " + str(int(time_limit) / 3600)
             subprocess.run("rm -rf " + basedir, shell=True)
             subprocess.run("mkdir " + basedir + " && cd " + basedir + com1 + com2, shell=True)
         elif tool == "resttestgen":
@@ -49,13 +49,15 @@ def blackbox(swagger, port):
             subprocess.run("cd tcases_" + service + " && mvn clean test", shell=True)
         elif tool == "apifuzzer":
             subprocess.run("APIFuzzer -s " + swagger + " -u http://localhost:" + str(port), shell=True)
+        elif tool == "mapi":
+            subprocess.run("./mapi run forallsecure/rest-go-" + service + " " + time_limit + " " + swagger + " --url http://localhost:" + str(port) + " --no-replay", shell=True)
 
 
 if __name__ == "__main__":
     tool = sys.argv[1]
-    port = sys.argv[2]
-    service = "project-tracking-system"
-    time_limit = "0.1"
+    service = sys.argv[2]
+    port = sys.argv[3]
+    time_limit = sys.argv[4]
     curdir = os.getcwd()
 
     if tool == "evomaster-whitebox":
@@ -64,11 +66,7 @@ if __name__ == "__main__":
         subprocess.run("python3 run_service.py " + service + " " + str(port) + " blackbox", shell=True)
 
     print("Service started in the background. To check or kill the session, please see README file.")
-    time.sleep(10)
-
-    subprocess.run("tmux new -d -s small_cov 'sh small_cov.sh " + str(port) + "'", shell=True)
-    print("We are getting coverage now.")
-    time.sleep(10)
+    time.sleep(20)
 
     if tool == "evomaster-whitebox":
         whitebox(40119)
@@ -82,5 +80,9 @@ if __name__ == "__main__":
         blackbox(os.path.join(curdir, "doc/project_swagger.json"), 50118)
 
     print("Experiments are done. We are safely closing the service now. If you want to run more, please check if there is unclosed session. You can check it with 'tmux ls' command. To close the session, you can run 'tmux kill-sess -t {session name}'")
-    time.sleep(30)
+    time.sleep(5)
+
+    print("We are getting coverage now.")
+    subprocess.run("java -jar org.jacoco.cli-0.8.7-nodeps.jar dump --address localhost --port " + str(port) + " --destfile jacoco_" + str(port) + "_2.exec", shell=True)
+
     subprocess.run("tmux kill-sess -t " + service, shell=True)
